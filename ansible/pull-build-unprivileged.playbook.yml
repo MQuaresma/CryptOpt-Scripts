@@ -27,17 +27,6 @@
         target: deepclean
         chdir: ~/CryptOpt
 
-    - name: fetch fiat binaries
-      copy:
-        src: '~/jazzopt/fiat-crypto/src/ExtractionOCaml/{{item}}'
-        dest: '~/CryptOpt/src/bridge/fiat-bridge/data/'
-        remote_src: true
-      loop:
-        - dettman_multiplication
-        - solinas_reduction
-        - unsaturated_solinas
-        - word_by_word_montgomery
-
     - name: link MS
       ansible.builtin.shell:
         chdir: ~/CryptOpt
