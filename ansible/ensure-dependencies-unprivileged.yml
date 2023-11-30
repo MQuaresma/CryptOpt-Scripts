@@ -1,0 +1,79 @@
+# vim: set tw=2 sw=2 sts=2:
+
+- hosts: MPI
+  vars:
+    NODE_VERSION: 20.5.1
+    PKG_CONFIG_AM_SOURCE: assemblyline.pc.local
+    PKG_CONFIG_AM_DEST: assemblyline.pc
+    PKG_CONFIG_SDIR: /usr/local/lib/pkgconfig/
+    USERNAME: miguel
+    HOME_DIR: "/home/{{USERNAME}}"
+    ASSEMBLY_LINE_DIR: "{{HOME_DIR}}/AssemblyLine"
+  tasks:
+    - name: setup nvm
+      ansible.builtin.shell:
+        cmd: wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+      args:
+        executable: /bin/bash
+    
+    - name: install Node/NPM {{NODE_VERSION}}
+      ansible.builtin.shell:
+        cmd: source ~/.nvm/nvm.sh && nvm install {{NODE_VERSION}}
+      args:
+        executable: /bin/bash
+
+    - name: install libassemblyline
+      git:
+        repo: 'https://github.com/MQuaresma/AssemblyLine.git'
+        dest: "~/AssemblyLine"
+        version: "main"
+        update: yes
+        force: yes
+
+    - name: autogen
+      command:
+        chdir: "~/AssemblyLine"
+        cmd: bash autogen.sh
+
+    - name: configure
+      command:
+        chdir: "~/AssemblyLine"
+        cmd: ./configure
+
+    - name: make all
+      make:
+        target: all
+        chdir: "~/AssemblyLine"
+
+    - name: make install (unprivileged)
+      command:
+        cmd: cp {{PKG_CONFIG_AM_SOURCE}} {{PKG_CONFIG_AM_DEST}}
+        chdir: "~/AssemblyLine"
+    
+    - name: install measuresuite
+      git:
+        repo: 'https://github.com/MQuaresma/MeasureSuite.git'
+        dest: "~/MeasureSuite"
+        version: "main"
+        update: yes
+        force: yes
+
+    - name: clean
+      when: yes
+      make:
+        target: clean
+        chdir: ~/MeasureSuite
+
+    - name: install ts
+      ansible.builtin.shell:
+        chdir: "~/MeasureSuite/ts"
+        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine CFLAGS=$(pkg-config --cflags assemblyline) npm install
+      args:
+        executable: /bin/bash
+
+    - name: build measuresuite
+      ansible.builtin.shell:
+        chdir: "~/MeasureSuite"
+        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine npm run build
+      args:
+        executable: /bin/bash

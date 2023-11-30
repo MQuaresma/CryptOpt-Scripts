@@ -1,0 +1,54 @@
+#!/usr/bin/env ansible-playbook
+# vim: set tw=2 sw=2 sts=2:
+
+
+- hosts: MPI
+  become: false
+  gather_facts: false
+  tasks:
+    # - name: RESET FREQ
+    #  when: yes
+    #  #dont use become, it'll change ~
+    #  command:
+    #    cmd: sudo ./set_frequency.sh default
+    #    chdir: ~/cryptopt/modules/scripts/misc
+    #  ignore_errors: yes
+    - name: Update git repo
+      git:
+        repo: 'https://github.com/MQuaresma/CryptOpt.git'
+        dest: ~/CryptOpt
+        version: "main"
+        update: yes
+        force: yes
+
+    - name: deepclean
+      when: yes
+      make:
+        target: deepclean
+        chdir: ~/CryptOpt
+
+    - name: fetch fiat binaries
+      copy:
+        src: '~/jazzopt/fiat-crypto/src/ExtractionOCaml/{{item}}'
+        dest: '~/CryptOpt/src/bridge/fiat-bridge/data/'
+        remote_src: true
+      loop:
+        - dettman_multiplication
+        - solinas_reduction
+        - unsaturated_solinas
+        - word_by_word_montgomery
+
+    - name: link MS
+      ansible.builtin.shell:
+        chdir: ~/CryptOpt
+        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine CFLAGS=$(pkg-config --cflags assemblyline) npm install --save ~/MeasureSuite
+      args:
+        executable: /bin/bash
+
+    - name: build
+      ansible.builtin.shell:
+        cmd: source ~/.nvm/nvm.sh &&  PKG_CONFIG_PATH=~/AssemblyLine CFLAGS=$(pkg-config --cflags assemblyline) make dev
+        chdir: ~/CryptOpt
+      args:
+        executable: /bin/bash 
+
