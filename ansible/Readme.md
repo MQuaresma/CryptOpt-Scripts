@@ -19,7 +19,6 @@ Ansible can be used to run all the experiments and evaluations on the machines c
 | `update~`              | Pretty much an `sudo apt update && sudo apt upgrade -y`| 
 | `wilson~`              | Pretty much a local loop through `curves` which are then "session'ed". |  
 | `just-end-everything~` | Ends all Wilsons and CryptOpts. |  
-| `bench-supercop~`      | Mounts pil and runs the supercop benchmark. Will not pull supercop. |  
 | `x-val~`               | Mounts pil, archives best asms, runs `x-val.sh`. Run `../tex/x-val2tex.ts 3>&1` locally after. |  
 
 Key: (`~`: `.playbook.yaml` )

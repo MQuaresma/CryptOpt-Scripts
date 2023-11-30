@@ -1,24 +1,21 @@
 #!/usr/bin/env ansible-playbook
-# vim: set tw=2 sw=2 sts=2:
 
-
-- hosts: intel amd
+- hosts: MPI
   become: false
   gather_facts: false
   tasks:
-    - name: RESET FREQ
-      when: yes
-      #dont use become, it'll change ~
-      command:
-        cmd: sudo ./set_frequency.sh default
-        chdir: ~/cryptopt/modules/scripts/misc
-      ignore_errors: yes
+    # - name: RESET FREQ
+    #  when: yes
+    #  #dont use become, it'll change ~
+    #  command:
+    #    cmd: sudo ./set_frequency.sh default
+    #    chdir: ~/cryptopt/modules/scripts/misc
+    #  ignore_errors: yes
     - name: Update git repo
       git:
-        repo: 'https://github.com/0xADE1A1DE/CryptOpt.git'
+        repo: 'https://github.com/MQuaresma/CryptOpt.git'
         dest: ~/cryptopt
         version: "main"
-        version: "feature/bls12"
         update: yes
         force: yes
 
@@ -28,9 +25,18 @@
         target: deepclean
         chdir: ~/cryptopt
 
-    - name: build
-      make:
-        target: all
+    - name: link MS
+      ansible.builtin.shell:
         chdir: ~/cryptopt
+        cmd: source ~/.nvm/nvm.sh && npm install --save ~/MeasureSuite
+      args:
+        executable: /bin/bash
+
+    - name: build
+      ansible.builtin.shell:
+        cmd: source ~/.nvm/nvm.sh && make dev
+        chdir: ~/cryptopt
+      args:
+        executable: /bin/bash
 
 
