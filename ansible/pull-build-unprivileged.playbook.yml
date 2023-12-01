@@ -2,7 +2,12 @@
 # vim: set tw=2 sw=2 sts=2:
 
 
-- hosts: MPI
+- hosts: RUB #MPI
+  vars:
+    NODE_VERSION: 20.5.1
+    USERNAME: miguel
+    HOME_DIR: "/home/{{USERNAME}}"
+    NODE_HEADER_PATH: "{{HOME_DIR}}/.nvm/versions/node/v{{NODE_VERSION}}/include/"
   become: false
   gather_facts: false
   tasks:
@@ -30,13 +35,13 @@
     - name: link MS
       ansible.builtin.shell:
         chdir: ~/CryptOpt
-        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine CFLAGS=$(pkg-config --cflags assemblyline) npm install --save ~/MeasureSuite
+        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine CFLAGS="$(pkg-config --cflags assemblyline) -I{{NODE_HEADER_PATH}}" npm install --save ~/MeasureSuite
       args:
         executable: /bin/bash
 
     - name: build
       ansible.builtin.shell:
-        cmd: source ~/.nvm/nvm.sh &&  PKG_CONFIG_PATH=~/AssemblyLine CFLAGS=$(pkg-config --cflags assemblyline) make dev
+        cmd: source ~/.nvm/nvm.sh &&  PKG_CONFIG_PATH=~/AssemblyLine CFLAGS="$(pkg-config --cflags assemblyline) -I{{NODE_HEADER_PATH}}" make dev
         chdir: ~/CryptOpt
       args:
         executable: /bin/bash 

@@ -1,6 +1,6 @@
 # vim: set tw=2 sw=2 sts=2:
 
-- hosts: MPI
+- hosts: RUB #MPI
   vars:
     NODE_VERSION: 20.5.1
     PKG_CONFIG_AM_SOURCE: assemblyline.pc.local
@@ -9,6 +9,7 @@
     USERNAME: miguel
     HOME_DIR: "/home/{{USERNAME}}"
     ASSEMBLY_LINE_DIR: "{{HOME_DIR}}/AssemblyLine"
+    NODE_HEADER_PATH: "{{HOME_DIR}}/.nvm/versions/node/v{{NODE_VERSION}}/include/"
   tasks:
     - name: setup nvm
       ansible.builtin.shell:
@@ -73,7 +74,7 @@
     - name: install ts
       ansible.builtin.shell:
         chdir: "~/MeasureSuite/ts"
-        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine CFLAGS=$(pkg-config --cflags assemblyline) npm install
+        cmd: source ~/.nvm/nvm.sh && PKG_CONFIG_PATH=~/AssemblyLine CFLAGS="$(pkg-config --cflags assemblyline) -I{{NODE_HEADER_PATH}}" npm install
       args:
         executable: /bin/bash
 
