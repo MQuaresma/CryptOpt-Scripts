@@ -49,6 +49,12 @@
       command:
         cmd: cp {{PKG_CONFIG_AM_SOURCE}} {{PKG_CONFIG_AM_DEST}}
         chdir: "~/AssemblyLine"
+
+    - name: update .profile
+      lineinfile:
+        path: ~/.profile
+        line: export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:~/AssemblyLine
+        create: yes
     
     - name: install measuresuite
       git:
